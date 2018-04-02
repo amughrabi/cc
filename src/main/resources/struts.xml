@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE struts PUBLIC
+        "-//Apache Software Foundation//DTD Struts Configuration 2.5//EN"
+        "http://struts.apache.org/dtds/struts-2.5.dtd">
+
+<struts>
+    <constant name="struts.enable.DynamicMethodInvocation" value="true" />
+    <constant name="struts.devMode" value="true"/>
+    <constant name="struts.custom.i18n.resources" value="messages"/> <!-- to add resource bundle into code.-->
+    <constant name="struts.action.extension" value=","/>  <!-- this remove .action suffix from the URL-->
+
+    <constant name="struts.mapper.alwaysSelectFullNamespace" value="false"/>
+    <constant name="struts.patternMatcher" value="namedVariable"/>
+
+    <package name="default" extends="struts-default">
+        <action name="" class="jo.ju.edu.cc.web.action.ShowHome" method="execute">
+            <result name="success">/jsps/home.jsp</result>
+        </action>
+    </package>
+</struts>
