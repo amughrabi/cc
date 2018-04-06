@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<transactions>
+    <!--
+    Read(A)
+    A = A - 50
+    Write(A)
+    Read(B)
+    B = B+50
+    Write(B)
+    -->
+    <transaction id="T1" accessTimestamp="1523059200">
+        <operation var="A" type="read"/>
+        <operation var="A" type="sub">50</operation>
+        <operation var="A" type="write"/>
+        <operation var="B" type="read"/>
+        <operation var="B" type="add">50</operation>
+        <operation var="B" type="write"/>
+    </transaction>
+
+    <transaction id="T2" accessTimestamp="1523104200">
+        <operation var="A" type="read"/>
+        <operation var="A" type="sub">50</operation>
+        <operation var="A" type="write"/>
+        <operation var="B" type="read"/>
+        <operation var="B" type="add">50</operation>
+        <operation var="B" type="write"/>
+    </transaction>
+</transactions>
