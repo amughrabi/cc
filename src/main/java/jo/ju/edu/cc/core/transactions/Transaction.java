@@ -1,6 +1,5 @@
 package jo.ju.edu.cc.core.transactions;
 
-import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.util.List;
@@ -44,10 +43,5 @@ public class Transaction extends Attributes {
         transaction.put("operations", operationsObject);
 
         return transaction;
-    }
-
-    @Override
-    public @NotNull String toString() {
-        return toJSON().toString();
     }
 }

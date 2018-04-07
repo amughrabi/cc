@@ -8,21 +8,30 @@
     B = B+50
     Write(B)
     -->
+    <buffer>
+        <block id="A">10</block>
+        <block id="B">9</block>
+    </buffer>
+
     <transaction id="T1" accessTimestamp="1523059200">
-        <operation var="A" type="read"/>
-        <operation var="A" type="sub">50</operation>
-        <operation var="A" type="write"/>
-        <operation var="B" type="read"/>
-        <operation var="B" type="add">50</operation>
-        <operation var="B" type="write"/>
+        <operation var="start"  type="reserved"/>
+        <operation var="A"      type="read"/>
+        <operation var="A"      type="sub">50</operation>
+        <operation var="A"      type="write"/>
+        <operation var="B"      type="read"/>
+        <operation var="B"      type="add">50</operation>
+        <operation var="B"      type="write"/>
+        <operation var="commit" type="reserved"/>
     </transaction>
 
     <transaction id="T2" accessTimestamp="1523104200">
-        <operation var="A" type="read"/>
-        <operation var="A" type="sub">50</operation>
-        <operation var="A" type="write"/>
-        <operation var="B" type="read"/>
-        <operation var="B" type="add">50</operation>
-        <operation var="B" type="write"/>
+        <operation var="start"  type="reserved"/>
+        <operation var="A"      type="read"/>
+        <operation var="A"      type="sub">50</operation>
+        <operation var="A"      type="write"/>
+        <operation var="B"      type="read"/>
+        <operation var="B"      type="add">50</operation>
+        <operation var="B"      type="write"/>
+        <operation var="commit" type="reserved"/>
     </transaction>
 </transactions>

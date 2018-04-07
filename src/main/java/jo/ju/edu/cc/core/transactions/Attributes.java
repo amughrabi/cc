@@ -1,11 +1,12 @@
 package jo.ju.edu.cc.core.transactions;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class Attributes {
+public abstract class Attributes {
     private Map<String, String> attributes;
     public Attributes() {
         attributes = new HashMap<>();
@@ -25,5 +26,12 @@ public class Attributes {
 
     public void setAttributes(@NotNull Map<String, String> attributes) {
         this.attributes = attributes;
+    }
+
+    public @NotNull abstract JSONObject toJSON();
+
+    @Override
+    public @NotNull String toString() {
+        return toJSON().toString(3);
     }
 }
