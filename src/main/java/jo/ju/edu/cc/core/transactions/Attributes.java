@@ -1,6 +1,7 @@
 package jo.ju.edu.cc.core.transactions;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -16,7 +17,7 @@ public abstract class Attributes {
         attributes.put(key, value);
     }
 
-    public String get(@NotNull String  key) {
+    public @Nullable String get(@NotNull String  key) {
         return attributes.get(key);
     }
 
@@ -32,6 +33,6 @@ public abstract class Attributes {
 
     @Override
     public @NotNull String toString() {
-        return toJSON().toString(3);
+        return toJSON().toString();
     }
 }

@@ -12,8 +12,8 @@ public class Transaction extends Attributes {
         return getAttributes().get("id");
     }
 
-    public long getAccessTimestamp() {
-        return Long.parseLong( getAttributes().get("accessTimestamp") );
+    public long getAccessTimeUnit() {
+        return Long.parseLong( getAttributes().get("accessTimeUnit") );
     }
 
     public List<Operation> getOperations() {
@@ -27,7 +27,7 @@ public class Transaction extends Attributes {
     public JSONObject toJSON() {
         JSONObject transaction = new JSONObject();
         transaction.put("id", getId())
-                  .put("accessTimestamp", getAccessTimestamp());
+                  .put("accessTimeUnit", getAccessTimeUnit());
         JSONObject operationObject;
         JSONObject operationsObject = new JSONObject();
         int id = 1;

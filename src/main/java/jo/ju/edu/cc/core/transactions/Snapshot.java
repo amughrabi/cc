@@ -5,20 +5,20 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 public class Snapshot {
-    private Buffer buffer;
+    private Disk disk;
     private List<Transaction> transactions;
 
-    public Snapshot(@NotNull Buffer buffer, @NotNull List<Transaction> transactions) {
-        this.buffer = buffer;
+    public Snapshot(@NotNull Disk disk, @NotNull List<Transaction> transactions) {
+        this.disk = disk;
         this.transactions = transactions;
     }
 
-    public Buffer getBuffer() {
-        return buffer;
+    public Disk getDisk() {
+        return disk;
     }
 
-    public void setBuffer(Buffer buffer) {
-        this.buffer = buffer;
+    public void setDisk(Disk disk) {
+        this.disk = disk;
     }
 
     public List<Transaction> getTransactions() {

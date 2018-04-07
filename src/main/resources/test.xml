@@ -8,12 +8,12 @@
     B = B+50
     Write(B)
     -->
-    <buffer>
+    <disk>
         <block id="A">10</block>
         <block id="B">9</block>
-    </buffer>
+    </disk>
 
-    <transaction id="T1" accessTimestamp="1523059200">
+    <transaction id="T1" accessTimeUnit="10">
         <operation var="start"  type="reserved"/>
         <operation var="A"      type="read"/>
         <operation var="A"      type="sub">50</operation>
@@ -24,7 +24,7 @@
         <operation var="commit" type="reserved"/>
     </transaction>
 
-    <transaction id="T2" accessTimestamp="1523104200">
+    <transaction id="T2" accessTimeUnit="5">
         <operation var="start"  type="reserved"/>
         <operation var="A"      type="read"/>
         <operation var="A"      type="sub">50</operation>

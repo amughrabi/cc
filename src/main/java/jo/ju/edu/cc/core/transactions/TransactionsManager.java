@@ -1,6 +1,5 @@
 package jo.ju.edu.cc.core.transactions;
 
-import jo.ju.edu.cc.core.recovery.LogBasedRecovery;
 import jo.ju.edu.cc.core.xml.XMLParser;
 import jo.ju.edu.cc.core.xml.XMLParserImpl;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +12,7 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 public class TransactionsManager {
 
@@ -31,7 +31,7 @@ public class TransactionsManager {
         List<Operation> operations;
         Transaction transaction;
         NamedNodeMap transAttributes;
-        Buffer buffer = new Buffer();
+        Disk disk = new Disk();
         List<Block> blocks;
         NodeList blocksNode;
         Node blockNode;
@@ -71,7 +71,7 @@ public class TransactionsManager {
                             }
                             transaction.setOperations(operations);
                             transactions.add(transaction);
-                        } else { // buffer
+                        } else { // disk
                             blocks = new ArrayList<>();
                             blocksNode = node.getChildNodes();
                             for(int b = 0; b < blocksNode.getLength(); b++) {
@@ -87,34 +87,47 @@ public class TransactionsManager {
                                     blocks.add(block);
                                 }
                             }
-                            buffer.setBlocks(blocks);
+                            disk.setBlocks(blocks);
                         }
                     }
                 }
             }
         }
 
-        return new Snapshot(buffer, transactions);
+        return new Snapshot(disk, transactions);
     }
 
-    public static void execute(@NotNull Snapshot snapshot, @NotNull Protocol protocol) {
+    public static @NotNull TimeFrameTable constructTimeFrameTable(@NotNull Snapshot snapshot) {
         List<Transaction> transactions = snapshot.getTransactions();
-        Buffer buffer = snapshot.getBuffer();
         // sort them on AccessTimestamp
-        transactions.sort(Comparator.comparingLong(Transaction::getAccessTimestamp));
-        // log based
-        LogBasedRecovery logger = new LogBasedRecovery();
+        transactions.sort(Comparator.comparingLong(Transaction::getAccessTimeUnit));
         List<Operation> operations;
         // We need to build a time frame table.
-        for(Transaction transaction : transactions) {
+        TimeFrameTable timeFrameTable = new TimeFrameTable();
+        long timeUnit;
+        Transaction transaction;
+        for(int idx = 0; idx < transactions.size(); idx++) {
+            transaction = transactions.get(idx);
+            timeUnit = transaction.getAccessTimeUnit();
             operations = transaction.getOperations();
+            for(Operation operation : operations) {
+                timeFrameTable.put(timeUnit, operation, idx);
+                timeUnit++;
+            }
         }
+        return timeFrameTable;
+    }
 
-        switch (protocol) {
-            case LOG_BASED_DEFERRED:
+    public static void execute(@NotNull Snapshot snapshot, @NotNull TimeFrameTable timeFrameTable, @NotNull Protocol protocol) {
+        // Disk
+        Disk disk = snapshot.getDisk();
+        Map<Long, List<Operation>> table = timeFrameTable.getTable();
+      /*  for(int idx = 0; idx < table.keySet().size(); idx++) {
 
-                break;
         }
+        for(long timeUnit : timeFrameTable.getTable().keySet()) {
+
+        }*/
     }
 }
 

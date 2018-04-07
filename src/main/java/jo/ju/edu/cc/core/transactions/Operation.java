@@ -1,6 +1,7 @@
 package jo.ju.edu.cc.core.transactions;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
 public class Operation extends Attributes {
@@ -10,7 +11,7 @@ public class Operation extends Attributes {
         getAttributes().put(key, value);
     }
 
-    public String get(@NotNull String  key) {
+    public @Nullable String get(@NotNull String  key) {
         return getAttributes().get(key);
     }
 
