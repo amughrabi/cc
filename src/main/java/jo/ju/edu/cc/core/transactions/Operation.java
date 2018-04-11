@@ -4,8 +4,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONObject;
 
-public class Operation extends Attributes {
-    private String value;
+public class Operation extends Attributes implements IOperation {
+    private String value, transactionId;
 
     public void put(@NotNull String key, @NotNull String value) {
         getAttributes().put(key, value);
@@ -31,12 +31,21 @@ public class Operation extends Attributes {
         this.value = value;
     }
 
+    public String getTransactionId() {
+        return transactionId;
+    }
+
+    public void setTransactionId(String transactionId) {
+        this.transactionId = transactionId;
+    }
+
     @Override
     public @NotNull JSONObject toJSON() {
         JSONObject operationsObject = new JSONObject();
-        operationsObject.put("type",  getType());
-        operationsObject.put("var",   getVariable());
-        operationsObject.put("value", getValue());
+        operationsObject.put("transactionId", getTransactionId());
+        operationsObject.put("type",          getType());
+        operationsObject.put("var",           getVariable());
+        operationsObject.put("value",         getValue());
         return  operationsObject;
     }
 }

@@ -1,5 +1,9 @@
 package jo.ju.edu.cc.core.transactions;
 
+import jo.ju.edu.cc.core.recovery.ILogEntry;
+import jo.ju.edu.cc.core.recovery.LogBasedRecovery;
+import jo.ju.edu.cc.core.recovery.LogEntry;
+import jo.ju.edu.cc.core.util.StringUtil;
 import jo.ju.edu.cc.core.xml.XMLParser;
 import jo.ju.edu.cc.core.xml.XMLParserImpl;
 import org.jetbrains.annotations.NotNull;
@@ -61,6 +65,7 @@ public class TransactionsManager {
                                 if(operationNode.getNodeType() == Node.ELEMENT_NODE && operationNode.hasAttributes()) {
                                     opsAttributes = operationNode.getAttributes();
                                     operation = new Operation();
+                                    operation.setTransactionId(transaction.getId());
                                     for(int optIdx = 0; optIdx < opsAttributes.getLength(); optIdx++) {
                                         Node attr = opsAttributes.item(optIdx);
                                         operation.put(attr.getNodeName(), attr.getNodeValue());
@@ -122,12 +127,55 @@ public class TransactionsManager {
         // Disk
         Disk disk = snapshot.getDisk();
         Map<Long, List<Operation>> table = timeFrameTable.getTable();
-      /*  for(int idx = 0; idx < table.keySet().size(); idx++) {
-
-        }
+        // Create an empty buffer
+        Buffer buffer = new Buffer();
+        // Define CPU Registers
+        Registers registers = new Registers();
+        // Create the log file
+        LogBasedRecovery log = new LogBasedRecovery();
         for(long timeUnit : timeFrameTable.getTable().keySet()) {
+            // all operation need to be executed. If the protocol is deferred, the write will be in buffer until
+            // the transaction COMMIT.
+            List<Operation> operations = table.get(timeUnit);
+            for(Operation operation : operations) {
 
-        }*/
+
+                if( StringUtil.isEqual(operation.getType(), IOperation.START) ) {
+                    // <transactionId, variable, oldValue, newValue>
+                    // <T0, X, 50, 100>
+                    LogEntry logEntry = new LogEntry();
+                    logEntry.put(ILogEntry.transactionId, operation.getTransactionId());
+                    logEntry.put(ILogEntry.variable, operation.getVariable());
+                    logEntry.put(ILogEntry.oldValue, "");
+                    logEntry.put(ILogEntry.newValue, operation.getValue());
+
+                    log.log(operation.getTransactionId(), logEntry);
+                } else if (StringUtil.isEqual(operation.getType(), IOperation.READ)) {
+                    // copy the variable from disk to buffer.
+                    Block block = disk.getBlock(operation.getVariable());
+                    if(block != null) {
+                        buffer.addBlock( block );
+                        // copy the variable from buffer to transaction register
+                        registers.addOrUpdateBlock(operation.getTransactionId(), block);
+                    }
+                } else if (StringUtil.isEqual(operation.getType(), IOperation.WRITE)) {
+                    // write the data from registers to buffer
+                    Block rblock = registers.getBlock(operation.getTransactionId(), operation.getVariable());
+                    if(rblock != null) {
+                        buffer.addBlock(rblock);
+                        // In case of immediate update
+                        if(protocol == Protocol.LOG_BASED_IMMEDIATE) {
+                            Block block = buffer.getBlock(operation.getVariable());
+                            if(block != null) {
+                                disk.addBlock(block);
+                            }
+                        }
+                    }
+                } else if (StringUtil.isEqual(operation.getType(), IOperation.COMMIT)) {
+
+                }
+            }
+        }
     }
 }
 
