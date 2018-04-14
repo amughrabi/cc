@@ -17,5 +17,8 @@
         <action name="" class="jo.ju.edu.cc.web.action.ShowHome" method="execute">
             <result name="success">/jsps/home.jsp</result>
         </action>
+        <action name="perform" class="jo.ju.edu.cc.web.action.Process" method="execute">
+            <result name="success">/jsps/home.jsp</result>
+        </action>
     </package>
 </struts>

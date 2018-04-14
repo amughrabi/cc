@@ -23,7 +23,7 @@ public class Disk extends Attributes {
         this.blocks = blocks;
     }
 
-    public void addBlock(@NotNull Block block) {
+    public void addOrUpdateBlock(@NotNull Block block) {
         // blocks should be Identical
         blocks.removeIf(b -> StringUtil.isEqual(b.getId(), block.getId()));
         blocks.add(block);

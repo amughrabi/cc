@@ -34,4 +34,12 @@ public class LogBasedRecovery {
 
         log(transactionId, entry);
     }
+
+    public Map<String, List<LogEntry>> getLog() {
+        return log;
+    }
+
+    public void setLog(Map<String, List<LogEntry>> log) {
+        this.log = log;
+    }
 }

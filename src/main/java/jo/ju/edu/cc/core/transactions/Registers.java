@@ -4,7 +4,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 // Every transaction has its own working area in the CPU
@@ -21,7 +20,9 @@ public class Registers {
             workingArea = new WorkingArea();
             workingArea.setTransactionId(transactioId);
         }
-        workingArea.addBlock(block);
+        workingArea.addOrUpdateBlock(block);
+
+        registers.put(transactioId, workingArea);
     }
 
     public @Nullable Block getBlock(@NotNull String transactionId, @NotNull String blockId) {

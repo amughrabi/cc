@@ -123,59 +123,118 @@ public class TransactionsManager {
         return timeFrameTable;
     }
 
-    public static void execute(@NotNull Snapshot snapshot, @NotNull TimeFrameTable timeFrameTable, @NotNull Protocol protocol) {
+    public static @NotNull Snapshot execute(@NotNull Snapshot snapshot, @NotNull TimeFrameTable timeFrameTable,
+                                            @NotNull Protocol protocol) {
         // Disk
         Disk disk = snapshot.getDisk();
         Map<Long, List<Operation>> table = timeFrameTable.getTable();
         // Create an empty buffer
-        Buffer buffer = new Buffer();
+        Buffer buffer = snapshot.getBuffer();
         // Define CPU Registers
-        Registers registers = new Registers();
+        Registers registers = snapshot.getRegisters();
         // Create the log file
         LogBasedRecovery log = new LogBasedRecovery();
+        // Create a failure table --> If a transaction failed, the transaction should be skipped.
+        FailuresTable failures = new FailuresTable();
         for(long timeUnit : timeFrameTable.getTable().keySet()) {
             // all operation need to be executed. If the protocol is deferred, the write will be in buffer until
             // the transaction COMMIT.
             List<Operation> operations = table.get(timeUnit);
             for(Operation operation : operations) {
+                if(!operation.isNull() && !failures.isFailed(operation.getTransactionId())) {
+                    if( StringUtil.isEqual(operation.getType(), IOperation.START) ) {
+                        // Do nothing
+                        log(operation.getTransactionId(), operation.getVariable(), operation.getValue(), "", log);
+                    } else if (StringUtil.isEqual(operation.getType(), IOperation.READ)) {
+                        // copy the variable from disk to buffer.
+                        Block block = disk.getBlock(operation.getVariable());
+                        if(block != null) {
+                            buffer.addOrUpdateBlock( block );
+                            // copy the variable from buffer to transaction register
+                            registers.addOrUpdateBlock(operation.getTransactionId(), block);
+                        }
+                    } else if (StringUtil.isEqual(operation.getType(), IOperation.WRITE)) {
+                        // write the data from registers to buffer
+                        Block rblock = registers.getBlock(operation.getTransactionId(), operation.getVariable());
+                        if(rblock != null) {
+                            Block bBlock = buffer.getBlock(operation.getVariable());
+                            // Before write, log
+                            log(operation.getTransactionId(), operation.getVariable(), bBlock.getValue(), rblock.getValue(), log);
 
-
-                if( StringUtil.isEqual(operation.getType(), IOperation.START) ) {
-                    // <transactionId, variable, oldValue, newValue>
-                    // <T0, X, 50, 100>
-                    LogEntry logEntry = new LogEntry();
-                    logEntry.put(ILogEntry.transactionId, operation.getTransactionId());
-                    logEntry.put(ILogEntry.variable, operation.getVariable());
-                    logEntry.put(ILogEntry.oldValue, "");
-                    logEntry.put(ILogEntry.newValue, operation.getValue());
-
-                    log.log(operation.getTransactionId(), logEntry);
-                } else if (StringUtil.isEqual(operation.getType(), IOperation.READ)) {
-                    // copy the variable from disk to buffer.
-                    Block block = disk.getBlock(operation.getVariable());
-                    if(block != null) {
-                        buffer.addBlock( block );
-                        // copy the variable from buffer to transaction register
-                        registers.addOrUpdateBlock(operation.getTransactionId(), block);
-                    }
-                } else if (StringUtil.isEqual(operation.getType(), IOperation.WRITE)) {
-                    // write the data from registers to buffer
-                    Block rblock = registers.getBlock(operation.getTransactionId(), operation.getVariable());
-                    if(rblock != null) {
-                        buffer.addBlock(rblock);
-                        // In case of immediate update
-                        if(protocol == Protocol.LOG_BASED_IMMEDIATE) {
-                            Block block = buffer.getBlock(operation.getVariable());
-                            if(block != null) {
-                                disk.addBlock(block);
+                            buffer.addOrUpdateBlock(rblock);
+                            // In case of immediate update
+                            if(protocol == Protocol.LOG_BASED_IMMEDIATE) {
+                                Block block = buffer.getBlock(operation.getVariable());
+                                if(block != null) {
+                                    disk.addOrUpdateBlock(block);
+                                }
                             }
                         }
+                    } else if (StringUtil.isEqual(operation.getType(), IOperation.COMMIT)) {
+                        if(protocol == Protocol.LOG_BASED_DEFERRED) {
+                            // all variables are stored in buffer.
+                            for(Block block : buffer.getBlocks()) {
+                                disk.addOrUpdateBlock( block );
+                            }
+                        }
+                        log(operation.getTransactionId(), operation.getVariable(), operation.getValue(), "", log);
+                    } else if (StringUtil.isEqual(operation.getType(), IOperation.ADD) ||
+                            StringUtil.isEqual(operation.getType(), IOperation.SUB) ||
+                            StringUtil.isEqual(operation.getType(), IOperation.MULTI) ||
+                            StringUtil.isEqual(operation.getType(), IOperation.DIVIDE) ) {
+                        Block rBlock = registers.getBlock(operation.getTransactionId(), operation.getVariable());
+                        if(rBlock != null) {
+                            // we should update the registers.
+                            rBlock.setValue(
+                                    compute(operation.getType(), operation.getValue(), rBlock.getValue())
+                            );
+                        }
+                    } else if(StringUtil.isEqual(operation.getType(), IOperation.FAILURE)) {
+                        // Visually, The transaction is stopped; others should be complete to the end.
+                        failures.markAsFailed(operation.getTransactionId());
                     }
-                } else if (StringUtil.isEqual(operation.getType(), IOperation.COMMIT)) {
-
                 }
             }
         }
+        // update memories in snapshot
+        snapshot.setDisk(disk);
+        snapshot.setBuffer(buffer);
+        snapshot.setRegisters(registers);
+        snapshot.setLogBasedRecovery(log);
+        snapshot.setFailuresTable(failures);
+        snapshot.setProtocol(protocol);
+
+        return snapshot;
+    }
+
+    private static @NotNull String compute(@NotNull String operation, @NotNull String newValue, @NotNull String oldValue) {
+        long newVal = Long.valueOf(newValue);
+        long oldVal = Long.valueOf(oldValue);
+
+        switch (operation) {
+            case IOperation.ADD:
+                return String.valueOf(oldVal + newVal);
+            case IOperation.SUB:
+                return String.valueOf(oldVal - newVal);
+            case IOperation.MULTI:
+                return String.valueOf(oldVal * newVal);
+            case IOperation.DIVIDE:
+                return String.valueOf(oldVal / newVal); // We assume data are correct, no zero can be in the base.
+            default:
+                return "";
+        }
+    }
+
+    private static void log(@NotNull String transactionId, @NotNull String variable, @NotNull String oldValue,
+                            @NotNull String newValue, @NotNull LogBasedRecovery log) {
+        // <transactionId, variable, oldValue, newValue>
+        // <T0, X, 50, 100>
+        LogEntry logEntry = new LogEntry();
+        logEntry.put(ILogEntry.transactionId, transactionId);
+        logEntry.put(ILogEntry.variable, variable);
+        logEntry.put(ILogEntry.oldValue, oldValue);
+        logEntry.put(ILogEntry.newValue, newValue);
+        // set it to the log table
+        log.log(transactionId, logEntry);
     }
 }
-

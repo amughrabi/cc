@@ -14,24 +14,25 @@
     </disk>
 
     <transaction id="T1" accessTimeUnit="10">
-        <operation var="start"  type="reserved"/>
-        <operation var="A"      type="read"/>
-        <operation var="A"      type="sub">50</operation>
-        <operation var="A"      type="write"/>
-        <operation var="B"      type="read"/>
-        <operation var="B"      type="add">50</operation>
-        <operation var="B"      type="write"/>
-        <operation var="commit" type="reserved"/>
+        <operation var="start"   type="start"/>
+        <operation var="A"       type="read"/>
+        <operation var="A"       type="sub">50</operation>
+        <operation var="A"       type="write"/>
+        <operation var="failure" type="failure"/>
+        <operation var="B"       type="read"/>
+        <operation var="B"       type="add">50</operation>
+        <operation var="B"       type="write"/>
+        <operation var="commit"  type="commit"/>
     </transaction>
 
     <transaction id="T2" accessTimeUnit="5">
-        <operation var="start"  type="reserved"/>
-        <operation var="A"      type="read"/>
-        <operation var="A"      type="sub">50</operation>
-        <operation var="A"      type="write"/>
-        <operation var="B"      type="read"/>
-        <operation var="B"      type="add">50</operation>
-        <operation var="B"      type="write"/>
-        <operation var="commit" type="reserved"/>
+        <operation var="start"   type="start"/>
+        <operation var="A"       type="read"/>
+        <operation var="A"       type="sub">50</operation>
+        <operation var="A"       type="write"/>
+        <operation var="B"       type="read"/>
+        <operation var="B"       type="add">50</operation>
+        <operation var="B"       type="write"/>
+        <operation var="commit"  type="commit"/>
     </transaction>
 </snapshot>

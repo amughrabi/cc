@@ -48,4 +48,8 @@ public class Operation extends Attributes implements IOperation {
         operationsObject.put("value",         getValue());
         return  operationsObject;
     }
+
+    public boolean isNull() {
+        return this instanceof NullOperation;
+    }
 }

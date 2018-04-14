@@ -8,6 +8,6 @@ public interface IOperation {
                                SUB    = "sub",
                                ADD    = "add",
                                DIVIDE = "divide",
-                               MULTI  = "multi";
-
+                               MULTI  = "multi",
+                               FAILURE = "failure";
 }
