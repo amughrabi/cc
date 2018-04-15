@@ -9,6 +9,7 @@ import java.util.Map;
 
 public class TimeFrameTable {
     private Map<Long, List<Operation>> table;
+    private int maxListSize;
 
     public TimeFrameTable() {
         this.table = new LinkedHashMap<>();
@@ -28,6 +29,11 @@ public class TimeFrameTable {
 
         operations.add(operation);
         table.put(timeUnit, operations);
+
+        // for UI, We need to know the dimensions
+        if(maxListSize < operations.size()) {
+            maxListSize = operations.size();
+        }
     }
 
     public List<Operation> get(long timeUnit) {
@@ -40,5 +46,13 @@ public class TimeFrameTable {
 
     public void setTable(Map<Long, List<Operation>> table) {
         this.table = table;
+    }
+
+    public int getMaxListSize() {
+        return maxListSize;
+    }
+
+    public void setMaxListSize(int maxListSize) {
+        this.maxListSize = maxListSize;
     }
 }

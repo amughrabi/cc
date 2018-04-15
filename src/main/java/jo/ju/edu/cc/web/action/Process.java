@@ -1,6 +1,7 @@
 package jo.ju.edu.cc.web.action;
 
 import com.opensymphony.xwork2.ActionSupport;
+import jo.ju.edu.cc.core.transactions.Protocol;
 import jo.ju.edu.cc.core.transactions.Snapshot;
 import jo.ju.edu.cc.core.transactions.TimeFrameTable;
 import jo.ju.edu.cc.core.transactions.TransactionsManager;
@@ -22,6 +23,9 @@ public class Process extends ActionSupport {
 
             request.setAttribute("snapshot", snapshot);
             request.setAttribute("timeFrameTable", timeFrameTable);
+
+            snapshot = TransactionsManager.execute(snapshot, timeFrameTable, Protocol.LOG_BASED_IMMEDIATE);
+            request.setAttribute("snapshotAfter", snapshot);
         } catch (Exception ex) {
             request.setAttribute("error", "Sorry, wrong XML format");
         }
