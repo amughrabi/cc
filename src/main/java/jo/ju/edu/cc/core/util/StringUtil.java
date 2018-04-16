@@ -9,4 +9,8 @@ public class StringUtil {
     public static boolean isNullOrEmptyOrWhiteSpace(String str) {
         return (str == null || str.trim().length() == 0);
     }
+
+    public static boolean hasText(String txt) {
+        return !isNullOrEmptyOrWhiteSpace(txt);
+    }
 }

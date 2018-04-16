@@ -12,7 +12,7 @@ import java.util.Optional;
 public class Disk extends Attributes {
     private List<Block> blocks;
     public Disk() {
-        this.blocks = new ArrayList<>();
+        blocks = new ArrayList<>();
     }
 
     public List<Block> getBlocks() {
@@ -26,7 +26,7 @@ public class Disk extends Attributes {
     public void addOrUpdateBlock(@NotNull Block block) {
         // blocks should be Identical
         blocks.removeIf(b -> StringUtil.isEqual(b.getId(), block.getId()));
-        blocks.add(block);
+        blocks.add(block.getCopy());
     }
 
     public @Nullable Block getBlock(@NotNull String blockId) {

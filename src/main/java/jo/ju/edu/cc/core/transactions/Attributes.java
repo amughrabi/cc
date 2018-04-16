@@ -35,4 +35,11 @@ public abstract class Attributes {
     public @NotNull String toString() {
         return toJSON().toString();
     }
+
+    @Override
+    public @NotNull Map<String, String> clone() {
+        Map<String, String> map = new HashMap<>();
+        map.putAll(attributes);
+        return map;
+    }
 }

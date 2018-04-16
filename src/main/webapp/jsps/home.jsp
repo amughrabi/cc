@@ -1,3 +1,9 @@
+<%@ page import="jo.ju.edu.cc.core.util.StringUtil" %>
+<%@ page import="jo.ju.edu.cc.core.recovery.LogBasedRecovery" %>
+<%@ page import="jo.ju.edu.cc.core.recovery.LogEntry" %>
+<%@ page import="java.util.List" %>
+<%@ page import="java.util.Map" %>
+<%@ page import="jo.ju.edu.cc.core.transactions.*" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="s" uri="/struts-tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -13,11 +19,12 @@
 <c:if test="${not empty error}">
     <h2 style="color:red">${error}</h2>
 </c:if>
-<s:form action="perform">
-    <s:label for="snapshotXML" value="System Snapshot" cssStyle="font-weight: bold"/>
+<s:form action="perform" theme="simple">
+    <h3>System Snapshot</h3>
+    <s:label for="snapshotXML" value="System Snapshot" cssStyle="font-weight: bold; display: none;"/>
     <s:textarea name="snapshotXML" cols="60" rows="38" >
         <jsp:attribute name="value">
-            <?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <snapshot>
     <!--
     Read(A)
@@ -57,10 +64,37 @@
 </snapshot>
         </jsp:attribute>
     </s:textarea>
-    <s:label for="recoveryMethod" value="Recovery Method" cssStyle="font-weight: bold"/>
-    <s:radio list="#{'deferred' : 'Deferred', 'immediate' : 'Immediate'}" name="recoveryMethod" value="'deferred'" />
+    <%
+        String rMethod = (String) request.getAttribute("recoveryMethod");
+        if(StringUtil.isNullOrEmptyOrWhiteSpace(rMethod)) {
+            rMethod = "logBasedDeferred";
+        }
+        pageContext.setAttribute("rMethod", rMethod);
+    %>
+    <h3>Recovery Method</h3>
+    <label for="logBasedDeferred">
+        <input type="radio" name="recoveryMethod" value="logBasedDeferred" id="logBasedDeferred" ${empty rMethod or rMethod == 'logBasedDeferred' ? 'checked' : ''}/><span>Deferred</span>
+    </label>
+    <label for="logBasedImmediate">
+        <input type="radio" name="recoveryMethod" value="logBasedImmediate" id="logBasedImmediate" ${rMethod == 'logBasedImmediate' ? 'checked' : ''}/><span>Immediate</span>
+    </label>
+    <br/> <br/>
     <s:submit value="Run"/>
 </s:form>
+
+<%
+    // I would like to enforce the MVC, but the code will get more complicated. I totally agree to be simple with
+    // some bad practices over than best practice with complicated code.
+
+    String snapshotXML = (String) request.getAttribute("snapshotXML");
+    if(StringUtil.hasText(snapshotXML)) {
+        Snapshot snapshot = TransactionsManager.load(snapshotXML);
+
+        TimeFrameTable timeFrameTable = TransactionsManager.constructTimeFrameTable(snapshot);
+
+        pageContext.setAttribute("timeFrameTable", timeFrameTable);
+        pageContext.setAttribute("snapshot", snapshot);
+%>
 
 <c:if test="${not empty snapshot}">
     <h3>Disk (Before execution)</h3>
@@ -117,9 +151,21 @@
         </c:forEach>
     </table>
 
+    <%
+        String recoveryMethod = (String)request.getAttribute("recoveryMethod");
+        if(StringUtil.hasText(recoveryMethod)) {
+            Protocol protocol = Protocol.LOG_BASED_DEFERRED;
+            if(StringUtil.isEqual(recoveryMethod, Protocol.LOG_BASED_IMMEDIATE.toString())) {
+                protocol = Protocol.LOG_BASED_IMMEDIATE;
+            }
+
+            snapshot = TransactionsManager.execute(snapshot, timeFrameTable, protocol);
+
+            pageContext.setAttribute("snapshot", snapshot);
+    %>
     <h3>Buffer</h3>
     <table style="border: 1px solid #000">
-        <c:forEach items="${snapshotAfter.buffer.blocks}" var="block">
+        <c:forEach items="${snapshot.buffer.blocks}" var="block">
             <tr>
                 <td>${block.id}</td>
                 <td>${block.value}</td>
@@ -128,13 +174,64 @@
     </table>
     <h3>Disk (After execution)</h3>
     <table style="border: 1px solid #000">
-        <c:forEach items="${snapshotAfter.disk.blocks}" var="block">
+        <c:forEach items="${snapshot.disk.blocks}" var="block">
             <tr>
                 <td>${block.id}</td>
                 <td>${block.value}</td>
             </tr>
         </c:forEach>
     </table>
+    <%
+
+            LogBasedRecovery logBasedRecovery = snapshot.getLogBasedRecovery();
+            Map<String, List<LogEntry>> logMap = logBasedRecovery.getLog();
+            pageContext.setAttribute("logMap", logMap);
+    %>
+
+    <h3>Logs</h3>
+    <div>
+    <%
+            for(String transactionId : logMap.keySet()) {
+                List<LogEntry> entries = logMap.get(transactionId);
+                String txt = "";
+                for(LogEntry entry : entries) {
+                    txt = ("&lt;" + entry.getTransactionId()) ;
+                    if(!StringUtil.isEqual(entry.getVariable(), "start") && !StringUtil.isEqual(entry.getVariable(), "commit")) {
+                     txt += ", " + entry.getOldValue() + ", " + entry.getNewValue();
+                    } else {
+                        txt += ", <strong>" + entry.getVariable() + "</strong>";
+                    }
+                    txt += "&gt;";
+
+                    out.print(  txt + "<br/>");
+                }
+            }
+    %>
+    </div>
+    <%
+        if(RecoveryManager.requireRecover(snapshot)) {
+            snapshot = RecoveryManager.recover(snapshot);
+            pageContext.setAttribute("snapshot", snapshot);
+    %>
+    <h3>Disk (Recovered)</h3>
+    <table style="border: 1px solid #000">
+        <c:forEach items="${snapshot.disk.blocks}" var="block">
+            <tr>
+                <td>${block.id}</td>
+                <td>${block.value}</td>
+            </tr>
+        </c:forEach>
+    </table>
+
+    <%
+        }
+    %>
+    <%
+        }
+    %>
 </c:if>
+<%
+    }
+%>
 </body>
 </html>

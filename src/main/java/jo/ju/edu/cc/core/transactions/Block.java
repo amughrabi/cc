@@ -24,4 +24,11 @@ public class Block extends Attributes {
         jsObject.put("id", getId()).put("value", getValue());
         return jsObject;
     }
+
+    public Block getCopy() {
+        Block block = new Block();
+        block.setAttributes(clone());
+        block.setValue( new String(value) );
+        return block;
+    }
 }
