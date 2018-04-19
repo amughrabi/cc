@@ -14,7 +14,8 @@
     <constant name="struts.patternMatcher" value="namedVariable"/>
 
     <package name="default" extends="struts-default">
-        <action name="" class="jo.ju.edu.cc.web.action.ShowHome" method="execute">
+        <default-action-ref name="home" />
+        <action name="home" class="jo.ju.edu.cc.web.action.ShowHome" method="execute">
             <result name="success">/jsps/home.jsp</result>
         </action>
         <action name="perform" class="jo.ju.edu.cc.web.action.Process" method="execute">
