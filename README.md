@@ -19,7 +19,7 @@ It is the data that stored on the physical memory.
 It is the data that stored on the temporary memory.
 ## Registers
 It is the data that stored on the CPU memory.
-### Time frame Table
+## Time frame Table
 It is the table that constructed to order the transactions' operations within a time unit.   
 # Conditions
 * Each **transaction id** should be unique.
