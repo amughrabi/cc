@@ -5,6 +5,7 @@ import com.opensymphony.xwork2.ActionSupport;
 public class Process extends ActionSupport {
     private String snapshotXML;
     private String recoveryMethod;
+    private String useStrict2PL;
 
     @Override
     public String execute() {
@@ -25,5 +26,13 @@ public class Process extends ActionSupport {
 
     public void setRecoveryMethod(String recoveryMethod) {
         this.recoveryMethod = recoveryMethod;
+    }
+
+    public String getUseStrict2PL() {
+        return useStrict2PL;
+    }
+
+    public void setUseStrict2PL(String useStrict2PL) {
+        this.useStrict2PL = useStrict2PL;
     }
 }

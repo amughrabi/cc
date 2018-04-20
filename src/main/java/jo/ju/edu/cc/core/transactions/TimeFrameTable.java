@@ -20,14 +20,28 @@ public class TimeFrameTable {
         if(operations == null) {
             operations = new ArrayList<>();
         }
+        boolean added = false;
+        if(!inPlace(position, operations)) {
+            List<Operation> newLst =  new ArrayList<>();
+            for(int i = 0; i < operations.size(); i ++) {
+                if(position == i && operations.get(i).isNull()) {
+                    added = true;
+                    newLst.add(operation);
+                } else {
+                    newLst.add(operations.get(i));
+                }
+            }
+            operations = newLst;
+        }
+
         // padding-left
         if(position > operations.size()) {
             for(int i = 0; i < position; i++) {
                 operations.add(new NullOperation());
             }
         }
-
-        operations.add(operation);
+        if(!added)
+            operations.add(operation);
         table.put(timeUnit, operations);
 
         // for UI, We need to know the dimensions
@@ -36,6 +50,14 @@ public class TimeFrameTable {
         }
     }
 
+    private boolean inPlace(int position, List<Operation> operations) {
+        for(int i = 0; i < operations.size(); i++) {
+            if(position == i && operations.get(i).isNull()) {
+                return false;
+            }
+        }
+        return true;
+    }
     public List<Operation> get(long timeUnit) {
         return table.get(timeUnit);
     }

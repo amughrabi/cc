@@ -1,5 +1,6 @@
 package jo.ju.edu.cc.core.transactions;
 
+import jo.ju.edu.cc.core.locking.Strict2PL;
 import jo.ju.edu.cc.core.recovery.ILogEntry;
 import jo.ju.edu.cc.core.recovery.LogBasedRecovery;
 import jo.ju.edu.cc.core.recovery.LogEntry;
@@ -124,10 +125,17 @@ public class TransactionsManager {
     }
 
     public static @NotNull Snapshot execute(@NotNull Snapshot snapshot, @NotNull TimeFrameTable timeFrameTable,
-                                            @NotNull Protocol protocol) {
+                                            @NotNull Protocol protocol, boolean useStrict2PL) {
         // Disk
         Disk disk = snapshot.getDisk();
         Map<Long, List<Operation>> table = timeFrameTable.getTable();
+        // Locking
+        if(useStrict2PL) {
+            Strict2PL strict2PL = new Strict2PL(timeFrameTable);
+            strict2PL.contruct2PLTimeFrame();
+            timeFrameTable = strict2PL.getTimeFrameTable();
+            table = timeFrameTable.getTable();
+        }
         // Create an empty buffer
         Buffer buffer = snapshot.getBuffer();
         // Define CPU Registers
@@ -142,10 +150,10 @@ public class TransactionsManager {
             List<Operation> operations = table.get(timeUnit);
             for(Operation operation : operations) {
                 if(!operation.isNull() && !failures.isFailed(operation.getTransactionId())) {
-                    if( StringUtil.isEqual(operation.getType(), IOperation.START) ) {
+                    if( operation.isStart() ) {
                         // Do nothing
                         log(operation.getTransactionId(), operation.getVariable(), operation.getValue(), "", log);
-                    } else if (StringUtil.isEqual(operation.getType(), IOperation.READ)) {
+                    } else if (operation.isRead()) {
                         // copy the variable from disk to buffer.
                         Block block = disk.getBlock(operation.getVariable());
                         if(block != null) {
@@ -153,7 +161,7 @@ public class TransactionsManager {
                             // copy the variable from buffer to transaction register
                             registers.addOrUpdateBlock(operation.getTransactionId(), block);
                         }
-                    } else if (StringUtil.isEqual(operation.getType(), IOperation.WRITE)) {
+                    } else if (operation.isWrite()) {
                         // write the data from registers to buffer
                         Block rblock = registers.getBlock(operation.getTransactionId(), operation.getVariable());
                         if(rblock != null) {
@@ -170,7 +178,7 @@ public class TransactionsManager {
                                 }
                             }
                         }
-                    } else if (StringUtil.isEqual(operation.getType(), IOperation.COMMIT)) {
+                    } else if ( operation.isCommit() ) {
                         if(protocol == Protocol.LOG_BASED_DEFERRED) {
                             // all variables are stored in buffer.
                             for(Block block : buffer.getBlocks()) {
@@ -178,10 +186,7 @@ public class TransactionsManager {
                             }
                         }
                         log(operation.getTransactionId(), operation.getVariable(), operation.getValue(), "", log);
-                    } else if (StringUtil.isEqual(operation.getType(), IOperation.ADD) ||
-                            StringUtil.isEqual(operation.getType(), IOperation.SUB) ||
-                            StringUtil.isEqual(operation.getType(), IOperation.MULTI) ||
-                            StringUtil.isEqual(operation.getType(), IOperation.DIVIDE) ) {
+                    } else if ( operation.isMath() ) {
                         Block rBlock = registers.getBlock(operation.getTransactionId(), operation.getVariable());
                         if(rBlock != null) {
                             // we should update the registers.
@@ -189,7 +194,7 @@ public class TransactionsManager {
                                     compute(operation.getType(), operation.getValue(), rBlock.getValue())
                             );
                         }
-                    } else if(StringUtil.isEqual(operation.getType(), IOperation.FAILURE)) {
+                    } else if(operation.isFailure()) {
                         // Visually, The transaction is stopped; others should be complete to the end.
                         failures.markAsFailed(operation.getTransactionId());
                     }
@@ -203,6 +208,7 @@ public class TransactionsManager {
         snapshot.setLogBasedRecovery(log);
         snapshot.setFailuresTable(failures);
         snapshot.setProtocol(protocol);
+        snapshot.setTimeFrameTable(timeFrameTable);
 
         return snapshot;
     }

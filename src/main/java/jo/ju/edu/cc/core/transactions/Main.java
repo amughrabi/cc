@@ -1,5 +1,8 @@
 package jo.ju.edu.cc.core.transactions;
 
+import jo.ju.edu.cc.core.locking.LockEntry;
+import jo.ju.edu.cc.core.locking.LockTable;
+import jo.ju.edu.cc.core.locking.Strict2PL;
 import jo.ju.edu.cc.core.recovery.LogBasedRecovery;
 import jo.ju.edu.cc.core.recovery.LogEntry;
 
@@ -76,7 +79,7 @@ public class Main {
             System.out.println("------------------------------------------------");
         }
 
-        snapshot = TransactionsManager.execute(snapshot, timeFrameTable, Protocol.LOG_BASED_IMMEDIATE);
+        snapshot = TransactionsManager.execute(snapshot, timeFrameTable, Protocol.LOG_BASED_IMMEDIATE, true);
         System.out.println("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         Buffer buffer = snapshot.getBuffer();
         System.out.println(buffer);
@@ -104,6 +107,38 @@ public class Main {
             snapshot = RecoveryManager.recover(snapshot);
             disk = snapshot.getDisk();
             System.out.println(disk);
+        }
+
+
+        Strict2PL strict2PL = new Strict2PL(timeFrameTable);
+
+        strict2PL.growing();
+
+        LockTable lockTable = strict2PL.getLockTable();
+        Map<String, List<LockEntry>> lockMap = lockTable.getLockTable();
+        for(String transactionId : lockMap.keySet()) {
+            System.out.println(transactionId);
+            List<LockEntry> entries = lockMap.get(transactionId);
+            for(LockEntry entry : entries) {
+                System.out.print(entry.getVariable() + " : " + entry.getLockType());
+            }
+        }
+
+        strict2PL.contruct2PLTimeFrame();
+
+        table = strict2PL.getTimeFrameTable().getTable();
+        System.out.println("------------------------------------------------");
+        for(long tUnit : table.keySet()) {
+            ops = table.get(tUnit);
+            System.out.print("|");
+            System.out.print(tUnit);
+            System.out.print("|");
+            for(Operation operation : ops) {
+                System.out.print(operation);
+                System.out.print("|");
+            }
+            System.out.println("");
+            System.out.println("------------------------------------------------");
         }
     }
 }

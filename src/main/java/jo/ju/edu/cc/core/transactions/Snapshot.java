@@ -15,6 +15,8 @@ public class Snapshot {
     private List<Transaction> transactions;
     private LogBasedRecovery logBasedRecovery;
 
+    private TimeFrameTable timeFrameTable;
+
     public Snapshot(@NotNull Disk disk, @NotNull List<Transaction> transactions) {
         this.disk = disk;
         this.transactions = transactions;
@@ -77,5 +79,13 @@ public class Snapshot {
 
     public void setProtocol(Protocol protocol) {
         this.protocol = protocol;
+    }
+
+    public TimeFrameTable getTimeFrameTable() {
+        return timeFrameTable;
+    }
+
+    public void setTimeFrameTable(TimeFrameTable timeFrameTable) {
+        this.timeFrameTable = timeFrameTable;
     }
 }
