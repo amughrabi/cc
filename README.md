@@ -40,24 +40,24 @@ First you have to define a `<snapshot>` element.
 ```
 The snapshot contains `<disk>` and number of `<transaction>`s 
 ```xml
-    <disk>
-        <block id="A">10</block>
-        <block id="B">9</block>
-    </disk>
+<disk>
+    <block id="A">10</block>
+    <block id="B">9</block>
+</disk>
 ```
 The disk contains the default values for the variables that used from transactions, it's possible to be shared between transactions.
 ```xml
-    <transaction id="T1" accessTimeUnit="10">
-        <operation var="start"   type="start"/>
-        <operation var="A"       type="read"/>
-        <operation var="A"       type="sub">50</operation>
-        <operation var="A"       type="write"/>
-        <operation var="failure" type="failure"/>
-        <operation var="B"       type="read"/>
-        <operation var="B"       type="add">50</operation>
-        <operation var="B"       type="write"/>
-        <operation var="commit"  type="commit"/>
-    </transaction>
+<transaction id="T1" accessTimeUnit="10">
+    <operation var="start"   type="start"/>
+    <operation var="A"       type="read"/>
+    <operation var="A"       type="sub">50</operation>
+    <operation var="A"       type="write"/>
+    <operation var="failure" type="failure"/>
+    <operation var="B"       type="read"/>
+    <operation var="B"       type="add">50</operation>
+    <operation var="B"       type="write"/>
+    <operation var="commit"  type="commit"/>
+</transaction>
 ```
 The transaction has a set of operations that used to represent operations; for example, a transaction may contain the following operation:
 ```text
