@@ -7,7 +7,7 @@ A web application project to simulate the concurrency controls techniques.
 # Run the project
 * Download or clone the project
 * cd to `pom.xml` directory
-* Open the terminal run `mvn jetty:run`
+* Open the terminal and run `mvn jetty:run`
 * Open the browser and hit `http://localhost:8080`
 # Definitions
 ## Snapshot
