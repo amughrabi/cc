@@ -83,6 +83,3 @@ If every thing is OK, you need to hit run ... Enjoy! :smiley:
 # Licence 
 [MIT](https://github.com/amughrabi/cc/blob/master/LICENSE)
 
-Cheers!
-
-Ahmad Al Mughrabi   
