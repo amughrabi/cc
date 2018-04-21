@@ -6,7 +6,7 @@ A web application project to simulate the concurrency controls techniques.
 * [Git](https://git-scm.com/) - Optional in case of download the project
 # Run the project
 * Download or clone the project
-* cd to pom.xml directory
+* cd to `pom.xml` directory
 * Open the terminal run `mvn jetty:run`
 * Open the browser and hit `http://localhost:8080`
 # Definitions
