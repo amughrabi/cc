@@ -29,7 +29,7 @@ It is the table that constructed to order the transactions' operations within a 
 * No dashes or spaces allowed in attributes names.
 * All variables should be defined in `<disk>...</disk>`
 * Allowed mathematical operations are (+, -, /, *) 
-* Failures can be defined as a failed operation. 
+* Failures, Start, Commit can be defined as operations. 
 
 # How to write the system XML? 
 First you have to define a `<snapshot>` element.
