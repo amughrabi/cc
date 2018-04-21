@@ -1,5 +1,5 @@
 # Concurrency Control Simulation
-A project to simulate the concurrency controls techniques.
+A web application project to simulate the concurrency controls techniques.
 # Systems Prerequisites
 * [JDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) 1.8+
 * [Maven](https://maven.apache.org/)
