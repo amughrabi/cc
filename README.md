@@ -76,7 +76,7 @@ Write(B)
 To be structured as the above xml structure :point_up_2:
 
 **Important**: Make sure every variable in read/write operation has been defined/declared in the disk!
-# How To execute?
+# How to execute?
 It's simple, you need to 1) fill the XML, 2) select the recovery method and 3) decide to have strict-2PL... 
 
 If every thing is OK, you need to hit run ... Enjoy! :smiley:
